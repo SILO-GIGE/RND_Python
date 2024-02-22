@@ -18,21 +18,21 @@ class OSCSenderApp:
         master.title("OSC Sender App")
         
         # UI 크기를 2배로 확대
-        window_width = 600
-        window_height = 400
+        window_width = 1200
+        window_height = 800
         master.geometry(f"{window_width}x{window_height}")
         
-        self.label = tk.Label(master, text="보낼 값을 선택하세요:")
+        self.label = tk.Label(master, text=" [ LED CUBE Control , Push Button]", font=("Helvetica", 20))
         self.label.pack()
         
-        self.led_on_button = tk.Button(master, text="LED ON", command=lambda: self.send_led_signal(1), width=15, height=5)
-        self.led_on_button.pack(pady=10)
+        self.led_on_button = tk.Button(master, text="LED ON", command=lambda: self.send_led_signal(1), width=30, height=5, font=("Helvetica", 20))
+        self.led_on_button.pack(pady=20)
         
-        self.led_off_button = tk.Button(master, text="LED OFF", command=lambda: self.send_led_signal(0), width=15, height=5)
-        self.led_off_button.pack(pady=10)
+        self.led_off_button = tk.Button(master, text="LED OFF", command=lambda: self.send_led_signal(0),  width=30, height=5, font=("Helvetica", 20))
+        self.led_off_button.pack(pady=20)
         
-        self.exit_button = tk.Button(master, text="종료", command=self.exit_program, width=15, height=5)
-        self.exit_button.pack(pady=10)
+        self.exit_button = tk.Button(master, text="종료", command=self.exit_program,  width=30, height=5, font=("Helvetica", 20))
+        self.exit_button.pack(pady=20)
         
         self.status_label = tk.Label(master, text="")
         self.status_label.pack()
@@ -65,9 +65,9 @@ class OSCSenderApp:
     def update_status_label(self):
         if self.last_signal is not None:
             if self.last_signal == 1:
-                status_text = "현재상태 : LED ON (값: 1, 주소: /SILOKSH)"
+                status_text = " LED ON (값: 1, 주소: /SILOKSH)"
             else:
-                status_text = "현재상태 : LED OFF (값: 0, 주소: /SILOKSH)"
+                status_text = " LED OFF (값: 0, 주소: /SILOKSH)"
             self.status_label.config(text=status_text)
     
     def handle_osc_signal(self, address, *args):
