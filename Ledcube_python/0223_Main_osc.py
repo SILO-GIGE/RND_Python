@@ -4,18 +4,22 @@ from threading import Thread
 
 Main_port_num=5557 #윈도우 포트번호
 Server1_port_num=4208 #라즈베리파이 포트번호
+Server2_port_num=4209 #라즈베리파이 포트번호
+
 
 def send_osc_signal(ip_address, port, value):
     client = udp_client.SimpleUDPClient(ip_address, port)
     client.send_message("/SILOKSH", value)
 
 class OSCSenderApp:
-    def __init__(self, master, ip_address, port):
+    def __init__(self, master, ip1, ip2, port1, port2): # 서버를 지정. 
         self.master = master
-        self.ip_address = ip_address
-        self.port = port
+        self.ip_address1 = ip1
+        self.ip_address2 = ip2
+        self.port1 = port1
+        self.port2 = port2
         
-        master.title("OSC Sender App")
+        master.title("SILO LED CUBE OSC")
         
         # UI 크기를 2배로 확대
         window_width = 1200
@@ -43,14 +47,16 @@ class OSCSenderApp:
         self.server_ip="0.0.0.0"
         self.server_port=Main_port_num
         self.dispatcher=dispatcher.Dispatcher()
-        self.dispatcher.map("/Rasp", self.handle_osc_signal)
+        self.dispatcher.map("/Rasp1", self.handle_osc_signal)
+        self.dispatcher.map("/Rasp2", self.handle_osc_signal)
         self.server = osc_server.ThreadingOSCUDPServer((self.server_ip, self.server_port), self.dispatcher)
         self.server_thread = Thread(target=self.server.serve_forever)
         self.server_thread.start()
         
         
     def send_led_signal(self, value):
-        send_osc_signal(self.ip_address, self.port, value)
+        send_osc_signal(self.ip_address1, self.port1, value)
+        send_osc_signal(self.ip_address2, self.port2, value)
         self.last_signal = value
         self.update_status_label()
         if value == 1:
@@ -64,6 +70,9 @@ class OSCSenderApp:
     
     def update_status_label(self):
         if self.last_signal is not None:
+            if self.last_signal is not None:
+                status_text = f"현재 OSC 신호: Rasp1: /SILOKSH {self.last_signal}, Rasp2: /SILOKSH {self.last_signal}"
+                
             if self.last_signal == 1:
                 status_text = " LED ON (값: 1, 주소: /SILOKSH)"
             else:
@@ -71,7 +80,11 @@ class OSCSenderApp:
             self.status_label.config(text=status_text)
     
     def handle_osc_signal(self, address, *args):
-        if address == "/Rasp" and args[0] == 3:
+        if address == "/Rasp1" and args[0] == 3  and self.last_signal == 1:
+            self.led_on_button.config(state=tk.NORMAL)
+            self.led_off_button.config(state=tk.NORMAL)
+            self.exit_button.config(state=tk.NORMAL)
+        if address == "/Rasp2" and args[0] == 4 and self.last_signal == 1:
             self.led_on_button.config(state=tk.NORMAL)
             self.led_off_button.config(state=tk.NORMAL)
             self.exit_button.config(state=tk.NORMAL)
@@ -84,9 +97,11 @@ class OSCSenderApp:
         self.master.destroy()
 
 if __name__ == "__main__":
-    ip_address = "192.168.0.11" #Rasp1
-    port = Server1_port_num
+    Rasp1_address = "192.168.0.11"
+    Rasp2_address = "192.168.0.9"
+    port1 = Server1_port_num
+    port2 = Server2_port_num
     
     root = tk.Tk()
-    app = OSCSenderApp(root, ip_address, port)
+    app = OSCSenderApp(root, Rasp1_address, Rasp2_address, port1,port2)
     root.mainloop()
