@@ -1,9 +1,16 @@
+'''
+
+윈도우가 메인서버
+시간에 따른 UI를 만들어서
+시작 시간을 설정하면 그 시간에 콘텐츠가 재생된다.
+
+'''
+
 import tkinter as tk
 from pythonosc import udp_client, dispatcher,osc_server
 from threading import Thread
 
-Main_port_num=555
-7 #윈도우 포트번호
+Main_port_num=5557 #윈도우 포트번호
 Server1_port_num=4208 #라즈베리파이 포트번호
 Server2_port_num=4209 #라즈베리파이 포트번호
 
@@ -15,7 +22,6 @@ def send_osc_signal(ip_address, port, value):
 class OSCSenderApp:
     def __init__(self, master, ip1, ip2, port1, port2): # 서버를 지정. 
         self.master = master
-        
         self.ip_address1 = ip1
         self.ip_address2 = ip2
         self.port1 = port1
@@ -99,8 +105,8 @@ class OSCSenderApp:
         self.master.destroy()
 
 if __name__ == "__main__":
-    Rasp1_address = "192.168.0.5"
-    Rasp2_address = "192.168.0.4"
+    Rasp1_address = "192.168.0.11"
+    Rasp2_address = "192.168.0.9"
     port1 = Server1_port_num
     port2 = Server2_port_num
     
