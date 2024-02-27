@@ -2,9 +2,8 @@ import tkinter as tk
 from pythonosc import udp_client, dispatcher,osc_server
 from threading import Thread
 
-Main_port_num=555
-7 #윈도우 포트번호
-Server1_port_num=4208 #라즈베리파이 포트번호
+Main_port_num=5557 #윈도우 포트번호
+Server1_port_num=4206 #라즈베리파이 포트번호
 Server2_port_num=4209 #라즈베리파이 포트번호
 
 
