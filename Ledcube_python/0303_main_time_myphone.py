@@ -32,7 +32,7 @@ class OSCSenderApp:
 
         # UI 크기를 2배로 확대
         window_width = 1200
-        window_height = 800
+        window_height = 600
         master.geometry(f"{window_width}x{window_height}")
 
         self.label = tk.Label(master, text=" [ LED CUBE Control , Set start time]", font=("Arial", 30,"bold"),bg="white")
