@@ -32,7 +32,7 @@ class OSCSenderApp:
 
         # UI 크기를 2배로 확대
         window_width = 1200
-        window_height = 600
+        window_height = 650
         master.geometry(f"{window_width}x{window_height}")
 
         self.label = tk.Label(master, text=" [ LED CUBE Control , Set start time]", font=("Arial", 30,"bold"),bg="white")
@@ -95,7 +95,7 @@ class OSCSenderApp:
         try:
             entered_time_obj = datetime.strptime(entered_time, "%H:%M:%S")
         except ValueError:
-            self.status_label.config(text="Invaild time format. Please enter again")
+            self.status_label.config(text="Invaild time format. Please enter again",bg="white")
             
             # 빨간색으로 깜빡이도록 설정
             self.status_label.after(50, lambda: self.status_label.config(fg="red"))
@@ -124,7 +124,7 @@ class OSCSenderApp:
         # 입력한 시간 초기화
         self.time_entry.delete(0, tk.END)
         # 오류 메시지 표시
-        self.status_label.config(text="Entered time is earlier than current time. Please enter again", fg="red")
+        self.status_label.config(text="Entered time is earlier than current time. Please enter again", fg="red",bg="white")
         self.blink_entry_background(self.time_entry, times=1)
         # 확인 버튼을 다시 처음 상태로 설정
         self.confirm_button.config(command=self.confirm_time)   
@@ -139,6 +139,7 @@ class OSCSenderApp:
             entry_widget.after(delay * (2*i + 2), lambda: entry_widget.config(bg=color1))
         entry_widget.after(delay * (2*times + 1), lambda: entry_widget.config(bg=color2))  # 마지막으로 원래대로 돌아오도록 설정
     
+    #시간이 일치할때까지 대기하는함수.
     def wait_for_match(self):
         self.status_label.config(text="대기중",bg="white")
         self.confirm_button.config(state=tk.DISABLED)
@@ -153,7 +154,23 @@ class OSCSenderApp:
             self.disable_buttons()
         else:
             self.status_label.after(1000, self.wait_for_match)
-            
+            '''
+            # 대기중인 시간 계산
+            entered_time_obj = datetime.strptime(entered_time, "%H:%M:%S")
+            current_time_obj = datetime.strptime(current_time, "%H:%M:%S")
+            remaining_time = entered_time_obj - current_time_obj
+
+            # 남은 시간을 텍스트로 변환
+            remaining_time_text = str(remaining_time)
+
+            # 남은 시간을 표시할 새로운 레이블 생성
+            if not hasattr(self, 'remaining_time_label'):
+                self.remaining_time_label = tk.Label(self.master, text="", font=("Helvetica", 20), bg="white")
+                self.remaining_time_label.place(x=20, y=100)  # 적절한 위치로 조정
+            self.remaining_time_label.config(text=f"Remaining Time: {remaining_time_text}")
+
+            self.status_label.after(1000, self.wait_for_match)
+            '''
 
     def disable_buttons(self):
         self.confirm_button.config(state=tk.DISABLED)
@@ -181,6 +198,12 @@ class OSCSenderApp:
         if address == "/Rasp1" and args[0] == 3 and self.last_signal == 1:
             self.send_led_signal(0)
             self.enable_buttons()
+            # 다시 처음 상태로 돌아가기 위해 시간 입력 창을 활성화하고 대기 상태 메시지를 지우기
+            self.time_entry.config(state=tk.NORMAL)
+            self.time_entry.delete(0, tk.END)
+            self.time_entry.insert(0, "Enter time")
+            self.time_entry.config(fg="gray",bg="white")
+            self.status_label.config(text="", bg="white")
         if address == "/Rasp2" and args[0] == 4 and self.last_signal == 1:
             self.send_led_signal(0)
             self.enable_buttons()
