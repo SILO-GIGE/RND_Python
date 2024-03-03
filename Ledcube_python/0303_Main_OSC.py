@@ -220,7 +220,7 @@ class OSCSenderApp:
         self.master.after(1000, self.update_current_time)  # 1초마다 현재 시간 갱신
 
 if __name__ == "__main__":
-    Rasp1_address = "192.168.1.3"
+    Rasp1_address = "172.30.1.87"
     Rasp2_address = "192.168.0.4"
     port1 = Server1_port_num
     port2 = Server2_port_num
