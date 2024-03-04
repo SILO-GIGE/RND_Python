@@ -8,11 +8,11 @@ LED CUBE MAIN CONTROL OSC UI
 import tkinter as tk
 from pythonosc import udp_client, dispatcher, osc_server
 from threading import Thread
-from datetime import datetime
+from datetime import datetime,timedelta
 
 Main_port_num = 5557  # 윈도우 포트번호
 Server1_port_num = 4206  # 라즈베리파이 포트번호
-Server2_port_num = 4209  # 라즈베리파이 포트번호
+Server2_port_num = 4207  # 라즈베리파이 포트번호
 
 def send_osc_signal(ip_address, port, value):
     client = udp_client.SimpleUDPClient(ip_address, port)
@@ -43,7 +43,12 @@ class OSCSenderApp:
         self.time_entry.bind("<FocusIn>", self.on_entry_click)
         self.time_entry.bind("<FocusOut>", self.on_focus_out)
         self.time_entry.pack(pady=20)
-
+        
+        # '10초뒤' 버튼 추가
+        self.ten_seconds_button = tk.Button(master, text="10s later", command=self.set_time_ten_seconds_later, width=10, height=1, font=("Helvetica", 15, "bold"))
+        self.ten_seconds_button.pack()
+        self.ten_seconds_button.place(x=770, y=70)  # 원하는 위치로 조정
+        
         #확인버튼설정
         self.confirm_button = tk.Button(master, text="CONFIRM", command=self.confirm_time, width=30, height=5,
                                          font=("Helvetica", 20,"bold"))
@@ -196,7 +201,7 @@ class OSCSenderApp:
 
     def handle_osc_signal(self, address, *args):
         if address == "/Rasp1" and args[0] == 3 and self.last_signal == 1:
-            self.send_led_signal(0)
+            #self.send_led_signal(0)
             self.enable_buttons()
             # 다시 처음 상태로 돌아가기 위해 시간 입력 창을 활성화하고 대기 상태 메시지를 지우기
             self.time_entry.config(state=tk.NORMAL)
@@ -205,7 +210,7 @@ class OSCSenderApp:
             self.time_entry.config(fg="gray",bg="white")
             self.status_label.config(text="", bg="white")
         if address == "/Rasp2" and args[0] == 4 and self.last_signal == 1:
-            self.send_led_signal(0)
+            #self.send_led_signal(0)
             self.enable_buttons()
 
     # 종료버튼을 누르면 실행되는 함수
@@ -218,10 +223,17 @@ class OSCSenderApp:
         self.current_time_label.config(text=f"Current Time: {current_time}",bg="white")
         self.current_time_label.place(x=20, y=70)  # UI 왼쪽 상단으로부터 좀 아래로 이동
         self.master.after(1000, self.update_current_time)  # 1초마다 현재 시간 갱신
-
+        
+    #10초뒤 시간이 자동입력
+    def set_time_ten_seconds_later(self):
+        current_time = datetime.now()
+        ten_seconds_later = current_time + timedelta(seconds=10)
+        self.time_entry.delete(0, tk.END)
+        self.time_entry.insert(0, ten_seconds_later.strftime("%H:%M:%S"))
+        
 if __name__ == "__main__":
-    Rasp1_address = "192.168.0.5"
-    Rasp2_address = "192.168.0.4"
+    Rasp1_address = "192.168.0.5" #CUBE1
+    Rasp2_address = "192.168.0.2" #CUBE2
     port1 = Server1_port_num
     port2 = Server2_port_num
 
