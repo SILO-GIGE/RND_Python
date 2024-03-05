@@ -11,21 +11,24 @@ from threading import Thread
 from datetime import datetime,timedelta
 
 Main_port_num = 5557  # 윈도우 포트번호
-Server1_port_num = 4206  # 라즈베리파이 포트번호
-Server2_port_num = 4207  # 라즈베리파이 포트번호
+Server1_port_num = 4206  # 시현 RND 라즈베리파이
+Server2_port_num = 4207  # MDW 라즈베리파이1 포트번호
+Server3_port_num = 4208  # MDW 라즈베리파이2 포트번호
 
 def send_osc_signal(ip_address, port, value):
     client = udp_client.SimpleUDPClient(ip_address, port)
     client.send_message("/SILOKSH", value)
 
 class OSCSenderApp:
-    def __init__(self, master, ip1, ip2, port1, port2):  # 서버를 지정.
+    def __init__(self, master, ip1, ip2,ip3, port1, port2,port3):  # 서버를 지정.
         self.master = master
 
         self.ip_address1 = ip1
         self.ip_address2 = ip2
+        self.ip_address3 = ip3
         self.port1 = port1
         self.port2 = port2
+        self.port3 = port3
 
         master.title("SILO LED CUBE CONTROL UI")
         master.configure(bg="white")
@@ -45,7 +48,7 @@ class OSCSenderApp:
         self.time_entry.pack(pady=20)
         
         # '10초뒤' 버튼 추가
-        self.ten_seconds_button = tk.Button(master, text="10s later", command=self.set_time_ten_seconds_later, width=10, height=1, font=("Helvetica", 15, "bold"))
+        self.ten_seconds_button = tk.Button(master, text="5s later", command=self.set_time_ten_seconds_later, width=10, height=1, font=("Helvetica", 15, "bold"))
         self.ten_seconds_button.pack()
         self.ten_seconds_button.place(x=770, y=70)  # 원하는 위치로 조정
         
@@ -76,6 +79,7 @@ class OSCSenderApp:
         self.dispatcher = dispatcher.Dispatcher()
         self.dispatcher.map("/Rasp1", self.handle_osc_signal)
         self.dispatcher.map("/Rasp2", self.handle_osc_signal)
+        self.dispatcher.map("/Rasp3", self.handle_osc_signal)
         self.server = osc_server.ThreadingOSCUDPServer((self.server_ip, self.server_port), self.dispatcher)
         self.server_thread = Thread(target=self.server.serve_forever)
         self.server_thread.start()
@@ -188,6 +192,7 @@ class OSCSenderApp:
     def send_led_signal(self, value):
         send_osc_signal(self.ip_address1, self.port1, value)
         send_osc_signal(self.ip_address2, self.port2, value)
+        send_osc_signal(self.ip_address3, self.port3, value)
         self.last_signal = value
         self.update_status_label()
 
@@ -214,7 +219,8 @@ class OSCSenderApp:
             self.enable_buttons()
     '''
     def handle_osc_signal(self, address, *args):
-        if (address == "/Rasp1" or address == "/Rasp2") and args[0] in [3, 4] and self.last_signal == 1:
+        if (address == "/Rasp1" or address == "/Rasp2" or address == "/Rasp3") and args[0] in [3, 4, 5] and self.last_signal == 1:
+        #if (address == "/Rasp1" and  address == "/Rasp3") and args[0] in [3, 5] and self.last_signal == 1:
             #self.send_led_signal(0)
             self.enable_buttons()
             # 다시 처음 상태로 돌아가기 위해 시간 입력 창을 활성화하고 대기 상태 메시지를 지우기
@@ -226,6 +232,7 @@ class OSCSenderApp:
 
     # 종료버튼을 누르면 실행되는 함수
     def exit_program(self):
+        self.send_led_signal(0) #종료하기전 0을 보낸다.
         self.server.shutdown()
         self.master.destroy()
 
@@ -237,19 +244,22 @@ class OSCSenderApp:
         
     #10초뒤 시간이 자동입력
     def set_time_ten_seconds_later(self):
+        self.send_led_signal(0)
         current_time = datetime.now()
-        ten_seconds_later = current_time + timedelta(seconds=10)
+        ten_seconds_later = current_time + timedelta(seconds=5)
         self.time_entry.delete(0, tk.END)
         self.time_entry.insert(0, ten_seconds_later.strftime("%H:%M:%S"))
         
 if __name__ == "__main__":
-    Rasp1_address = "192.168.0.5" #CUBE1
-    Rasp2_address = "192.168.0.3" #CUBE2
+    Rasp1_address = "192.168.50.233" #CUBE1 시현RND 라즈베리파이
+    Rasp2_address = "192.168.50.240" #CUBE2 MDW 라즈베리파이1
+    Rasp3_address = "192.168.50.160" #CUBE3 MDW 라즈베리파이2
     port1 = Server1_port_num
     port2 = Server2_port_num
+    port3 = Server3_port_num
 
     root = tk.Tk()
-    app = OSCSenderApp(root, Rasp1_address, Rasp2_address, port1, port2)
+    app = OSCSenderApp(root, Rasp1_address, Rasp2_address,Rasp3_address, port1, port2, port3)
     # 윈도우 창이 닫힐 때 프로그램 종료를 위한 설정
     root.protocol("WM_DELETE_WINDOW", app.exit_program)
     root.mainloop()
