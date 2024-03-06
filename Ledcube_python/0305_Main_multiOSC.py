@@ -34,8 +34,8 @@ class OSCSenderApp:
         master.configure(bg="white")
 
         # UI 크기를 2배로 확대
-        window_width = 1200
-        window_height = 650
+        window_width = 1000
+        window_height = 500
         master.geometry(f"{window_width}x{window_height}")
 
         self.label = tk.Label(master, text=" [ LED CUBE Control , Set start time]", font=("Arial", 30,"bold"),bg="white")
@@ -50,15 +50,19 @@ class OSCSenderApp:
         # '10초뒤' 버튼 추가
         self.ten_seconds_button = tk.Button(master, text="5s later", command=self.set_time_ten_seconds_later, width=10, height=1, font=("Helvetica", 15, "bold"))
         self.ten_seconds_button.pack()
-        self.ten_seconds_button.place(x=770, y=70)  # 원하는 위치로 조정
+        self.ten_seconds_button.place(x=700, y=70)  # 원하는 위치로 조정
+        
+        self.led_off_button = tk.Button(master, text="led off", command=self.led_off, width=10, height=1, font=("Helvetica", 15, "bold"))
+        self.led_off_button.pack()
+        self.led_off_button.place(x=850, y=70)  # 원하는 위치로 조정
         
         #확인버튼설정
-        self.confirm_button = tk.Button(master, text="CONFIRM", command=self.confirm_time, width=30, height=5,
+        self.confirm_button = tk.Button(master, text="CONFIRM", command=self.confirm_time, width=30, height=2,
                                          font=("Helvetica", 20,"bold"))
         #종료버튼설정
         self.confirm_button.pack(pady=20)
 
-        self.exit_button = tk.Button(master, text="EXIT", command=self.exit_program, width=30, height=5,
+        self.exit_button = tk.Button(master, text="EXIT", command=self.exit_program, width=30, height=2,
                                      font=("Helvetica", 20,"bold"))
         self.exit_button.pack(pady=20)
 
@@ -154,6 +158,8 @@ class OSCSenderApp:
         self.confirm_button.config(state=tk.DISABLED)
         self.exit_button.config(state=tk.DISABLED)
         self.time_entry.config(state=tk.DISABLED)
+        self.ten_seconds_button.config(state=tk.DISABLED)
+        self.led_off_button.config(state=tk.DISABLED)
 
         entered_time = self.time_entry.get()
         current_time = datetime.now().strftime("%H:%M:%S")
@@ -163,31 +169,18 @@ class OSCSenderApp:
             self.disable_buttons()
         else:
             self.status_label.after(1000, self.wait_for_match)
-            '''
-            # 대기중인 시간 계산
-            entered_time_obj = datetime.strptime(entered_time, "%H:%M:%S")
-            current_time_obj = datetime.strptime(current_time, "%H:%M:%S")
-            remaining_time = entered_time_obj - current_time_obj
-
-            # 남은 시간을 텍스트로 변환
-            remaining_time_text = str(remaining_time)
-
-            # 남은 시간을 표시할 새로운 레이블 생성
-            if not hasattr(self, 'remaining_time_label'):
-                self.remaining_time_label = tk.Label(self.master, text="", font=("Helvetica", 20), bg="white")
-                self.remaining_time_label.place(x=20, y=100)  # 적절한 위치로 조정
-            self.remaining_time_label.config(text=f"Remaining Time: {remaining_time_text}")
-
-            self.status_label.after(1000, self.wait_for_match)
-            '''
 
     def disable_buttons(self):
         self.confirm_button.config(state=tk.DISABLED)
         self.exit_button.config(state=tk.DISABLED)
+        self.ten_seconds_button.config(state=tk.DISABLED)
+        self.led_off_button.config(state=tk.DISABLED)
 
     def enable_buttons(self):
         self.confirm_button.config(state=tk.NORMAL)
         self.exit_button.config(state=tk.NORMAL)
+        self.ten_seconds_button.config(state=tk.NORMAL)
+        self.led_off_button.config(state=tk.NORMAL)
 
     def send_led_signal(self, value):
         send_osc_signal(self.ip_address1, self.port1, value)
@@ -203,21 +196,7 @@ class OSCSenderApp:
             else:
                 status_text = " LED OFF (값: 0, 주소: /SILOKSH)"
             self.status_label.config(text=status_text)
-    '''
-    def handle_osc_signal(self, address, *args):
-        if address == "/Rasp1" and args[0] == 3 and self.last_signal == 1:
-            self.send_led_signal(0)
-            self.enable_buttons()
-            # 다시 처음 상태로 돌아가기 위해 시간 입력 창을 활성화하고 대기 상태 메시지를 지우기
-            self.time_entry.config(state=tk.NORMAL)
-            self.time_entry.delete(0, tk.END)
-            self.time_entry.insert(0, "Enter time")
-            self.time_entry.config(fg="gray",bg="white")
-            self.status_label.config(text="", bg="white")
-        if address == "/Rasp2" and args[0] == 4 and self.last_signal == 1:
-            self.send_led_signal(0)
-            self.enable_buttons()
-    '''
+
     def handle_osc_signal(self, address, *args):
         if (address == "/Rasp1" or address == "/Rasp2" or address == "/Rasp3") and args[0] in [3, 4, 5] and self.last_signal == 1:
         #if (address == "/Rasp1" and  address == "/Rasp3") and args[0] in [3, 5] and self.last_signal == 1:
@@ -244,11 +223,12 @@ class OSCSenderApp:
         
     #10초뒤 시간이 자동입력
     def set_time_ten_seconds_later(self):
-        self.send_led_signal(0)
         current_time = datetime.now()
         ten_seconds_later = current_time + timedelta(seconds=5)
         self.time_entry.delete(0, tk.END)
         self.time_entry.insert(0, ten_seconds_later.strftime("%H:%M:%S"))
+    def led_off(self):
+        self.send_led_signal(0)
         
 if __name__ == "__main__":
     Rasp1_address = "192.168.50.233" #CUBE1 시현RND 라즈베리파이
