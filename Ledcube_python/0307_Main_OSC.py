@@ -14,7 +14,7 @@ Main_port_num = 5557  # 윈도우 포트번호
 Server1_port_num = 4206  # 시현 RND 라즈베리파이
 Server2_port_num = 4207  # MDW 라즈베리파이1 포트번호
 Server3_port_num = 4208  # MDW 라즈베리파이2 포트번호
-contents_num=2 #2번
+contents_num=2
 def send_osc_signal(ip_address, port, value):
     client = udp_client.SimpleUDPClient(ip_address, port)
     client.send_message("/SILOKSH", value)
@@ -74,13 +74,12 @@ class OSCSenderApp:
         self.status_label = tk.Label(master, text="", font=("Helvetica", 20,"bold"))
         self.status_label.pack()
 
+        #현재시간표시
+
+
         self.current_time_label = tk.Label(master, text="", font=("Helvetica", 20))
         self.current_time_label.place(x=20, y=60)  # UI 왼쪽 상단에 배치
 
-        # 타이머 레이블 추가
-        self.timer_label = tk.Label(master, text="", font=("Helvetica", 12))
-        self.timer_label.place(x=450, y=120)  # UI 왼쪽 상단으로부터 좀 아래로 이동
-        
         self.last_signal = None
 
         # OSC서버설정
@@ -167,27 +166,13 @@ class OSCSenderApp:
         entered_time = self.time_entry.get()
         current_time = datetime.now().strftime("%H:%M:%S")
         if current_time == entered_time:
-            self.start_timer()  # 타이머 시작
+            
             self.send_led_signal(1)
             self.status_label.config(text="LED ON. CONTENTS PLAYING",fg="blue",bg="white")
             self.disable_buttons()
         else:
             self.status_label.after(1000, self.wait_for_match)
-    # 타이머 시작 함수
-    def start_timer(self):
-        self.timer_seconds = 0  # 초 초기화
-        self.update_timer_label()  # 타이머 레이블 업데이트 시작
-    # 타이머 레이블 업데이트 함수
-    def update_timer_label(self):
-        minutes, seconds = divmod(self.timer_seconds, 60)
-        self.timer_label.config(text=f"Timer: {minutes:02d}:{seconds:02d}")  # 타이머 레이블 업데이트
-        self.timer_seconds += 1  # 초 증가
-        self.master.after(1000, self.update_timer_label)  # 1초마다 타이머 레이블 업데이트
-    # 타이머 초기화 함수
-    def reset_timer(self):
-        if self.rasp1_state * self.rasp2_state * self.rasp3_state == 1 and self.num ==contents_num:
-            self.timer_seconds = 0  # 초 초기화
-            self.update_timer_label()  # 타이머 레이블 업데이트 시작
+
     def disable_buttons(self):
         self.confirm_button.config(state=tk.DISABLED)
         self.exit_button.config(state=tk.DISABLED)
@@ -228,7 +213,7 @@ class OSCSenderApp:
             self.rasp3_state = 1
             #print("333")
         
-        if self.rasp1_state * self.rasp2_state * self.rasp3_state == 1 and self.num <contents_num-1 :
+        if self.rasp1_state * self.rasp2_state * self.rasp3_state == 1 and self.num <contents_num-1:
             self.send_led_signal(1)
             print(self.num)
             self.num +=1
@@ -238,7 +223,6 @@ class OSCSenderApp:
             
         if self.rasp1_state * self.rasp2_state * self.rasp3_state == 1 and self.num ==contents_num-1:
             self.enable_buttons()
-            self.reset_timer()  # 타이머 초기화
             self.num=0
             # 다시 처음 상태로 돌아가기 위해 시간 입력 창을 활성화하고 대기 상태 메시지를 지우기
             self.time_entry.config(state=tk.NORMAL)
