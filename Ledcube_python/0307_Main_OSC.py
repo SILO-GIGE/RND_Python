@@ -14,7 +14,9 @@ Main_port_num = 5557  # 윈도우 포트번호
 Server1_port_num = 4206  # 시현 RND 라즈베리파이
 Server2_port_num = 4207  # MDW 라즈베리파이1 포트번호
 Server3_port_num = 4208  # MDW 라즈베리파이2 포트번호
-contents_num=2
+contents_num=50  #반복할 숫자
+
+
 def send_osc_signal(ip_address, port, value):
     client = udp_client.SimpleUDPClient(ip_address, port)
     client.send_message("/SILOKSH", value)
